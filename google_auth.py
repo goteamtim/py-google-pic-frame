@@ -1,6 +1,7 @@
 import base64
 import hashlib
 import random
+import json
 import http.server
 import socketserver
 import requests
@@ -31,13 +32,14 @@ class google_auth(object):
         # scope=email%20profile&
         # response_type=code&
         # state=
-        # redirect_uri=http://127.0.0.1:9004&
+        # redirect_uri=http://localhost:9004&
         # client_id=client_id
         payload = {'client_id': self.c.get_client_id(), 'redirect_uri': 'http://127.0.0.1:5000', 'state': 'slideshow-access',
                    'response_type': 'code', 'scope': 'https://www.googleapis.com/auth/photoslibrary.readonly'}
         r = requests.get(self.auth_url, params=payload)
         webbrowser.open_new(r.url)
         self.start_callback_server()
+        # TODO: The above call needs to be done in its own thread.  It halts the completion of this code and the app freezes
         print('scope is hardcoded')
         #print(r.text)
         #raise NotImplementedError
@@ -58,6 +60,12 @@ class google_auth(object):
             # Take the code and get a token here
             #auth_client = google_credentials.Credentials()
             print(client_code)
+            #Take the client code and store it somewhere here then make a call out to the token server to get that
+            self.c.set_client_code(client_code)
+            access_info = self.generate_access_token(client_code)
+            print('access info')
+            print(access_info)
+            print('access info')
             return 'You may continue back to your app'
 
         @app.route('/refresh')
@@ -68,7 +76,7 @@ class google_auth(object):
 
 
     def generate_access_token(self,code):
-        # code=4/P7q7W91a-oMsCeLvIaQm6bTrgtp7&
+        # code=
         # client_id=your_client_id&
         # client_secret=your_client_secret&
         # redirect_uri=https://oauth2.example.com/code&
@@ -80,10 +88,11 @@ class google_auth(object):
             'redirect_uri': 'http://localhost:5000/refresh',
             'grant_type': 'authorization_code'
         }
-        r = requests.get(self.token_endpoint, params=parameters)
+        r = requests.post(self.token_endpoint, params=parameters)
         print('Access token ')
-        print(r.json())
-        return r.json()
+        #json_response = json.loads(r.text)
+        print(r.text)
+        return r.text
 
 def generate_random_string(length):
     seed = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-_.~0987654321'
