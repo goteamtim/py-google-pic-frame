@@ -3,7 +3,10 @@ import json
 import credentials as creds
 import time
 import threading
-# https://accounts.google.com/o/oauth2/device/code  Call this URL to get a device to show the user.
+import random
+import google.auth
+import google_auth
+
 class google_photos(object):
     base_photos_url = 'https://photoslibrary.googleapis.com/v1/'
     def __init__(self,api_key):
@@ -14,7 +17,7 @@ class google_photos(object):
         # credentials = gce.AppAssertionCredentials(
         #     scope='https://www.googleapis.com/auth/devstorage.read_write')
         #     http = credentials.authorize(httplib2.Http())
-        data = {'client_id':'224611185406-ln4f75s9vh77ckd9bicds121271k5lj8.apps.googleusercontent.com', 
+        data = {'client_id':self.c.get_client_id(), 
                 'scope':'paste'} 
         url = 'https://accounts.google.com/o/oauth2/device/code'
         r = requests.post(url,data = data)
@@ -22,19 +25,19 @@ class google_photos(object):
     
     def get_token(self):
     #           {
-    #     "device_code" : "4/4-GMMhmHCXhWEzkobqIHGG_EnNYYsAkukHspeYUk9E8",
-    #     "user_code" : "GQVQ-JKEC",
-    #     "verification_url" : "https://www.google.com/device",
+    #     "device_code" : "",
+    #     "user_code" : "",
+    #     "verification_url" : "",
     #     "expires_in" : 1800,
     #     "interval" : 5
     #   }
-        data = {'client_id': '224611185406-ln4f75s9vh77ckd9bicds121271k5lj8.apps.googleusercontent.com', 
+        data = {'client_id': self.c.get_client_id(), 
                 'scope':'profile,email'} 
         url = 'https://accounts.google.com/o/oauth2/device/code'
         r = requests.post(url,data = data)
         json_response = json.loads(r.text)
         print(r.text)
-        t = threading.Thread(target=self.listen_for_response('224611185406-ln4f75s9vh77ckd9bicds121271k5lj8.apps.googleusercontent.com','wbYU3iPXRztKZ9j870hH65p-', json_response['device_code'] ,json_response['interval'],json_response['expires_in']),args=())
+        t = threading.Thread(target=self.listen_for_response(self.c.get_client_id(), self.c.get_client_secret(), json_response['device_code'] ,json_response['interval'],json_response['expires_in']),args=())
         t.start()
         if t.isAlive():
             pass
@@ -89,3 +92,13 @@ class google_photos(object):
 
     def load_album(self):
         pass
+
+def generate_random_string( length ):
+    seed = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-_.~0987654321'
+    generated_string = ''
+    counter = 0
+    while (counter < length ):
+        generated_string += seed[random.randint(0,len(seed))]
+        counter += 1
+
+    return generated_string

@@ -2,6 +2,8 @@ import tkinter as tk
 from PIL import Image, ImageTk
 import google_photos as google
 import credentials as creds
+import webbrowser
+import google_auth
 
 class Application(tk.Frame):
     def __init__(self, master=None):
@@ -24,7 +26,7 @@ class Application(tk.Frame):
                               command=self.master.destroy)
         self.quit.pack(side="bottom")
 
-        new_window_button = tk.Button(self,text="New Window",command=self.create_window)
+        new_window_button = tk.Button(self,text="New Window",command=self.sign_in)
         new_window_button.pack()
 
         image = Image.open("image.jpg")
@@ -35,13 +37,17 @@ class Application(tk.Frame):
         label.pack()
 
     def sign_in(self):
+        auth = google_auth.google_auth()
+        auth.login()
+        webbrowser.open_new('https://www.google.com')
         print("Initiating sign-in")
 
     def create_window(self):
         window = tk.Toplevel(self)
-        
-        json_credential = self.gp.get_token();
+
+        #json_credential = self.gp.get_token()
         #json_credential = google.google_photos.get_token(self)
+        json_credential = 'testing'
         
         label = tk.Label(window, text=json_credential,fg="red")
         label.pack()
